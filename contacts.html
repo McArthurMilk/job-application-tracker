@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Contacts{% endblock %}
+{% block content %}
+<h1>Contacts</h1>
+
+<section class="card">
+    <h2>{{ 'Edit Contact' if edit_id else 'Add Contact' }}</h2>
+    {% if not companies %}
+        <p class="muted">Add a <a href="{{ url_for('companies') }}">company</a> first, then you can add contacts.</p>
+    {% else %}
+    <form method="post" action="{{ url_for('edit_contact', contact_id=edit_id) if edit_id else url_for('contacts') }}">
+        <div class="form-grid">
+            <label>Name *
+                <input name="contact_name" maxlength="100" required value="{{ item.contact_name|blank }}">
+            </label>
+            <label>Company *
+                <select name="company_id" required>
+                    <option value="">-- choose --</option>
+                    {% for c in companies %}
+                    <option value="{{ c.company_id }}" {{ 'selected' if item.company_id == c.company_id }}>{{ c.company_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Title
+                <input name="title" maxlength="100" value="{{ item.title|blank }}">
+            </label>
+            <label>Email
+                <input name="email" type="email" maxlength="100" value="{{ item.email|blank }}">
+            </label>
+            <label>Phone
+                <input name="phone" maxlength="20" value="{{ item.phone|blank }}">
+            </label>
+            <label>LinkedIn URL
+                <input name="linkedin_url" type="url" maxlength="200" placeholder="https://" value="{{ item.linkedin_url|blank }}">
+            </label>
+            <label class="wide">Notes
+                <textarea name="notes" rows="2">{{ item.notes|blank }}</textarea>
+            </label>
+        </div>
+        <button type="submit">{{ 'Save Changes' if edit_id else 'Add Contact' }}</button>
+        {% if edit_id %}<a class="button secondary" href="{{ url_for('contacts') }}">Cancel</a>{% endif %}
+    </form>
+    {% endif %}
+</section>
+
+<section class="card">
+    <h2>All Contacts ({{ contacts|length }})</h2>
+    {% if contacts %}
+    <table>
+        <tr><th>Name</th><th>Company</th><th>Title</th><th>Email</th><th>Phone</th><th>LinkedIn</th><th></th></tr>
+        {% for ct in contacts %}
+        <tr>
+            <td><strong>{{ ct.contact_name }}</strong>{% if ct.notes %}<div class="muted">{{ ct.notes }}</div>{% endif %}</td>
+            <td>{{ ct.company_name|blank }}</td>
+            <td>{{ ct.title|blank }}</td>
+            <td>{% if ct.email %}<a href="mailto:{{ ct.email }}">{{ ct.email }}</a>{% endif %}</td>
+            <td>{{ ct.phone|blank }}</td>
+            <td>{% if ct.linkedin_url %}<a href="{{ ct.linkedin_url }}" target="_blank">Profile</a>{% endif %}</td>
+            <td class="actions">
+                <a class="button small" href="{{ url_for('edit_contact', contact_id=ct.contact_id) }}">Edit</a>
+                <form method="post" action="{{ url_for('delete_contact', contact_id=ct.contact_id) }}"
+                      onsubmit="return confirm('Delete this contact?');">
+                    <button class="small danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No contacts yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

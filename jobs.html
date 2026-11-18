@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Jobs{% endblock %}
+{% block content %}
+<h1>Jobs</h1>
+
+<section class="card">
+    <h2>{{ 'Edit Job' if edit_id else 'Add Job' }}</h2>
+    {% if not companies %}
+        <p class="muted">Add a <a href="{{ url_for('companies') }}">company</a> first, then you can add jobs.</p>
+    {% else %}
+    <form method="post" action="{{ url_for('edit_job', job_id=edit_id) if edit_id else url_for('jobs') }}">
+        <div class="form-grid">
+            <label>Job Title *
+                <input name="job_title" maxlength="100" required value="{{ item.job_title|blank }}">
+            </label>
+            <label>Company *
+                <select name="company_id" required>
+                    <option value="">-- choose --</option>
+                    {% for c in companies %}
+                    <option value="{{ c.company_id }}" {{ 'selected' if item.company_id == c.company_id }}>{{ c.company_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Job Type
+                <select name="job_type">
+                    <option value="">-- choose --</option>
+                    {% for t in job_types %}
+                    <option {{ 'selected' if item.job_type == t }}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Minimum Salary
+                <input name="salary_min" type="number" min="0" value="{{ item.salary_min|blank }}">
+            </label>
+            <label>Maximum Salary
+                <input name="salary_max" type="number" min="0" value="{{ item.salary_max|blank }}">
+            </label>
+            <label>Date Posted
+                <input name="date_posted" type="date" value="{{ item.date_posted|blank }}">
+            </label>
+            <label class="wide">Job URL
+                <input name="job_url" type="url" maxlength="300" placeholder="https://" value="{{ item.job_url|blank }}">
+            </label>
+            <label class="wide">Required Skills <span class="muted">(comma separated, e.g. Python, SQL, Flask)</span>
+                <input name="requirements" value="{{ item.requirements|blank }}">
+            </label>
+        </div>
+        <button type="submit">{{ 'Save Changes' if edit_id else 'Add Job' }}</button>
+        {% if edit_id %}<a class="button secondary" href="{{ url_for('jobs') }}">Cancel</a>{% endif %}
+    </form>
+    {% endif %}
+</section>
+
+<section class="card">
+    <h2>All Jobs ({{ jobs|length }})</h2>
+    {% if jobs %}
+    <table>
+        <tr><th>Title</th><th>Company</th><th>Type</th><th>Salary</th><th>Posted</th><th>Skills</th><th></th></tr>
+        {% for j in jobs %}
+        <tr>
+            <td><strong>{% if j.job_url %}<a href="{{ j.job_url }}" target="_blank">{{ j.job_title }}</a>{% else %}{{ j.job_title }}{% endif %}</strong></td>
+            <td>{{ j.company_name|blank }}</td>
+            <td>{{ j.job_type|blank }}</td>
+            <td>
+                {% if j.salary_min is not none %}${{ "{:,}".format(j.salary_min) }}{% endif %}
+                {% if j.salary_min is not none and j.salary_max is not none %}&ndash;{% endif %}
+                {% if j.salary_max is not none %}${{ "{:,}".format(j.salary_max) }}{% endif %}
+            </td>
+            <td>{{ j.date_posted|blank }}</td>
+            <td>{% for s in j.skills %}<span class="tag">{{ s }}</span>{% endfor %}</td>
+            <td class="actions">
+                <a class="button small" href="{{ url_for('edit_job', job_id=j.job_id) }}">Edit</a>
+                <form method="post" action="{{ url_for('delete_job', job_id=j.job_id) }}"
+                      onsubmit="return confirm('Delete this job? This also deletes its applications.');">
+                    <button class="small danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No jobs yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

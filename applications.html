@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Applications{% endblock %}
+{% block content %}
+<h1>Applications</h1>
+
+<section class="card">
+    <h2>{{ 'Edit Application' if edit_id else 'Add Application' }}</h2>
+    {% if not jobs %}
+        <p class="muted">Add a <a href="{{ url_for('jobs') }}">job</a> first, then you can track an application for it.</p>
+    {% else %}
+    <form method="post" action="{{ url_for('edit_application', application_id=edit_id) if edit_id else url_for('applications') }}">
+        <div class="form-grid">
+            <label>Job *
+                <select name="job_id" required>
+                    <option value="">-- choose --</option>
+                    {% for j in jobs %}
+                    <option value="{{ j.job_id }}" {{ 'selected' if item.job_id == j.job_id }}>{{ j.job_title }} &ndash; {{ j.company_name|blank }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Application Date *
+                <input name="application_date" type="date" required value="{{ item.application_date|blank }}">
+            </label>
+            <label>Status
+                <select name="status">
+                    {% for s in statuses %}
+                    <option {{ 'selected' if item.status == s }}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>Resume Version
+                <input name="resume_version" maxlength="50" value="{{ item.resume_version|blank }}">
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="cover_letter_sent" {{ 'checked' if item.cover_letter_sent }}> Cover letter sent
+            </label>
+        </div>
+
+        <fieldset>
+            <legend>Interview Details (optional)</legend>
+            <div class="form-grid">
+                <label>Interview Date
+                    <input name="interview_date" type="date" value="{{ item.interview.interview_date|blank }}">
+                </label>
+                <label>Interviewer
+                    <input name="interviewer" value="{{ item.interview.interviewer|blank }}">
+                </label>
+                <label class="wide">Interview Notes
+                    <textarea name="interview_notes" rows="2">{{ item.interview.notes|blank }}</textarea>
+                </label>
+            </div>
+        </fieldset>
+
+        <button type="submit">{{ 'Save Changes' if edit_id else 'Add Application' }}</button>
+        {% if edit_id %}<a class="button secondary" href="{{ url_for('applications') }}">Cancel</a>{% endif %}
+    </form>
+    {% endif %}
+</section>
+
+<section class="card">
+    <h2>All Applications ({{ applications|length }})</h2>
+    {% if applications %}
+    <table>
+        <tr><th>Job</th><th>Applied</th><th>Status</th><th>Resume</th><th>Cover Letter</th><th>Interview</th><th></th></tr>
+        {% for a in applications %}
+        <tr>
+            <td><strong>{{ a.job_title }}</strong><div class="muted">{{ a.company_name|blank }}</div></td>
+            <td>{{ a.application_date }}</td>
+            <td><span class="badge {{ a.status|lower }}">{{ a.status }}</span></td>
+            <td>{{ a.resume_version|blank }}</td>
+            <td>{{ 'Yes' if a.cover_letter_sent else 'No' }}</td>
+            <td>
+                {% if a.interview %}
+                    {{ a.interview.interview_date|blank }}
+                    {% if a.interview.interviewer %}with {{ a.interview.interviewer }}{% endif %}
+                    {% if a.interview.notes %}<div class="muted">{{ a.interview.notes }}</div>{% endif %}
+                {% endif %}
+            </td>
+            <td class="actions">
+                <a class="button small" href="{{ url_for('edit_application', application_id=a.application_id) }}">Edit</a>
+                <form method="post" action="{{ url_for('delete_application', application_id=a.application_id) }}"
+                      onsubmit="return confirm('Delete this application?');">
+                    <button class="small danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No applications yet.</p>
+    {% endif %}
+</section>
+{% endblock %}
