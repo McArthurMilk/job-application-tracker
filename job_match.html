@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Job Match{% endblock %}
+{% block content %}
+<h1>Job Match</h1>
+
+<section class="card">
+    <h2>Your Skills</h2>
+    <form method="get" action="{{ url_for('job_match') }}" class="inline-form">
+        <input name="skills" placeholder="e.g. Python, SQL, Flask" value="{{ skills_text }}" required>
+        <button type="submit">Find Matches</button>
+    </form>
+    <p class="muted">Enter your skills separated by commas. Matching ignores upper/lower case.</p>
+</section>
+
+{% if results is not none %}
+<section class="card">
+    <h2>Matching Jobs</h2>
+    {% if results %}
+    <ol class="matches">
+        {% for r in results %}
+        <li>
+            <div class="match-head">
+                <strong>{{ r.job_title }}</strong> at {{ r.company_name|blank }}
+                <span class="percent">{{ r.percent }}%</span>
+                <span class="muted">({{ r.matched|length }}/{{ r.total }} skills)</span>
+            </div>
+            <div class="bar"><div style="width: {{ r.percent }}%"></div></div>
+            <div class="skills">
+                {% for s in r.matched %}<span class="tag have">{{ s }}</span>{% endfor %}
+                {% if r.missing %}<span class="muted">Missing:</span>
+                    {% for s in r.missing %}<span class="tag missing">{{ s }}</span>{% endfor %}
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p class="muted">No jobs with listed skills yet. Add required skills on the <a href="{{ url_for('jobs') }}">Jobs</a> page.</p>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}
