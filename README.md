@@ -38,14 +38,10 @@ cd job_tracker
 pip install -r requirements.txt
 ```
 
-### 4. Create the database
-This creates the `job_tracker` database, all four tables, and sample data:
-```bash
-mysql -u root -p < schema.sql
-```
-(Or open `schema.sql` in MySQL Workbench and run the whole script.)
+### 4. Open the database
 
-> **Note:** running `schema.sql` drops and recreates the `job_tracker` database, so any existing data in it is erased.
+Open `schema.sql` in MySQL Workbench and run the whole script.
+
 
 ### 5. Set your MySQL password
 Open `database.py` and replace `YOUR_PASSWORD` with your MySQL root password:
